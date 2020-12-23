@@ -1,4 +1,265 @@
-"use strict";var __extends=this&&this.__extends||function(){var r=function(e,t){return(r=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(e,t){e.__proto__=t}||function(e,t){for(var n in t)t.hasOwnProperty(n)&&(e[n]=t[n])})(e,t)};return function(e,t){function n(){this.constructor=e}r(e,t),e.prototype=null===t?Object.create(t):(n.prototype=t.prototype,new n)}}();exports.__esModule=!0;var React=require("react"),react_dom_1=require("react-dom"),main=document.querySelector("#root"),Field_square=function(t){function e(e){return t.call(this,e)||this}return __extends(e,t),e.prototype.render=function(){var e=this.props.value;return React.createElement("div",{className:"square_container",onClick:this.props.onClick},React.createElement("span",null,e))},e}(React.Component),Field=function(n){function e(e){var t=n.call(this,e)||this;return t.handle_click=function(e,t){console.log(e,t)},t.state={board:Array(3).fill(Array(3).fill("O"))},t}return __extends(e,n),e.prototype.render=function(){var n=this,e=this.state.board.map(function(e,t){return React.createElement("div",{key:t,className:"field_row"},e.map(function(e,t){return React.createElement(Field_square,{key:t,value:e,onClick:function(e){n.handle_click(id,e)}})}))});return React.createElement("div",{className:"field_container"},e)},e}(React.Component),App=function(t){function e(e){return t.call(this,e)||this}return __extends(e,t),e.prototype.render=function(){return React.createElement("div",{className:"game_container"},React.createElement(Field,null))},e}(React.Component);react_dom_1.render(React.createElement(App,null),main);turn _this;
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var React = require("react");
+var react_dom_1 = require("react-dom");
+var main = document.querySelector("#root");
+function copy_array(arr) {
+    var new_arr = [];
+    for (var i = 0; i < arr.length; i += 1) {
+        var type = typeof (arr[i]);
+        var value = arr[i];
+        if (type === "object") {
+            value = copy_array(value);
+        }
+        new_arr.push(value);
+    }
+    return new_arr;
+}
+function generate_n_size_array(size, fill) {
+    var output_arr = [];
+    for (var i = 0; i < size; i += 1) {
+        var row = [];
+        for (var j = 0; j < size; j += 1) {
+            row.push(fill);
+        }
+        output_arr.push(row);
+    }
+    return output_arr;
+}
+function check_game_state(board) {
+    var all_filled = true;
+    var row_length = board.length;
+    var column_length = board[0].length;
+    var columns = generate_n_size_array(column_length, "");
+    //Check for full rows
+    for (var row_index_1 = 0; row_index_1 < row_length; row_index_1 += 1) {
+        var row = board[row_index_1];
+        var x_count = 0;
+        var o_count = 0;
+        for (var i = 0; i < row.length; i += 1) {
+            columns[i][row_index_1] = row[i];
+            if (row[i] === "X") {
+                x_count += 1;
+            }
+            else if (row[i] === "O") {
+                o_count += 1;
+            }
+        }
+        if (x_count === row_length) {
+            return "X";
+        }
+        if (o_count === row_length) {
+            return "O";
+        }
+    }
+    //debugger;
+    //Check for full columns
+    for (var column_index_1 = 0; column_index_1 < column_length; column_index_1 += 1) {
+        var column = columns[column_index_1];
+        var x_count = 0;
+        var o_count = 0;
+        for (var i = 0; i < column.length; i += 1) {
+            if (column[i] === "X") {
+                x_count += 1;
+            }
+            else if (column[i] === "O") {
+                o_count += 1;
+            }
+            else {
+                all_filled = false;
+            }
+        }
+        if (x_count === column_length) {
+            return "X";
+        }
+        if (o_count === column_length) {
+            return "O";
+        }
+    }
+    //Get diagnals
+    var diagnals = [];
+    var left_diangal = [];
+    for (var row_index_2 = 0; row_index_2 < row_length; row_index_2 += 1) {
+        left_diangal.push(board[row_index_2][row_index_2]);
+    }
+    var right_diangal = [];
+    var row_index = 0;
+    var column_index = column_length - 1;
+    for (row_index; row_index < row_length; row_index += 1) {
+        right_diangal.push(board[row_index][column_index]);
+        column_index -= 1;
+    }
+    diagnals.push(left_diangal);
+    diagnals.push(right_diangal);
+    //Check diagnals
+    for (var diagnal_index = 0; diagnal_index < 2; diagnal_index += 1) {
+        var diagnal = diagnals[diagnal_index];
+        var x_count = 0;
+        var o_count = 0;
+        for (var i = 0; i < diagnal.length; i += 1) {
+            if (diagnal[i] === "X") {
+                x_count += 1;
+            }
+            else if (diagnal[i] === "O") {
+                o_count += 1;
+            }
+        }
+        if (x_count === row_length) {
+            return "X";
+        }
+        if (o_count === row_length) {
+            return "O";
+        }
+    }
+    //Check if all squares are filled
+    if (all_filled === true) {
+        return "D";
+    }
+    return "";
+}
+function get_possible_moves(board) {
+    var row_length = board.length;
+    var possible_moves_arr = [];
+    for (var row_index = 0; row_index < row_length; row_index += 1) {
+        for (var column_index = 0; column_index < row_length; column_index += 1) {
+            var value = board[row_index][column_index];
+            if (value === "") {
+                var possible_move = [row_index, column_index];
+                possible_moves_arr.push(possible_move);
+            }
+        }
+    }
+    return possible_moves_arr;
+}
+function make_move_on_board(board, move, symbol) {
+    var local_board = copy_array(board);
+    local_board[move[0]][move[1]] = symbol;
+    return local_board;
+}
+function minmax(board, minimize, advantage_symbol, disadvantage_symbol) {
+    var outcome = check_game_state(board);
+    switch (outcome) {
+        case "X":
+            if (advantage_symbol === "X") {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        case "O":
+            if (advantage_symbol === "O") {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        case "D":
+            return 0;
+    }
+    if (minimize === true) {
+        var worst_score = Infinity;
+        var possible_moves = get_possible_moves(board);
+        for (var i = 0; i < possible_moves.length; i += 1) {
+            var move = possible_moves[i];
+            var current_board = make_move_on_board(board, move, disadvantage_symbol);
+            var current_score = minmax(current_board, false, advantage_symbol, disadvantage_symbol);
+            if (current_score < worst_score) {
+                worst_score = current_score;
+            }
+        }
+        return worst_score;
+    }
+    else {
+        var best_score = -Infinity;
+        var possible_moves = get_possible_moves(board);
+        for (var i = 0; i < possible_moves.length; i += 1) {
+            var move = possible_moves[i];
+            var current_board = make_move_on_board(board, move, advantage_symbol);
+            var current_score = minmax(current_board, true, advantage_symbol, disadvantage_symbol);
+            if (current_score > best_score) {
+                best_score = current_score;
+            }
+        }
+        return best_score;
+    }
+}
+function select_best_move(board, advantage_symbol, disadvantage_symbol) {
+    var best_score = -Infinity;
+    var best_move;
+    var possible_moves = get_possible_moves(board);
+    for (var i = 0; i < possible_moves.length; i += 1) {
+        var move = possible_moves[i];
+        var current_local_board = make_move_on_board(board, move, advantage_symbol);
+        var current_score = minmax(current_local_board, true, advantage_symbol, disadvantage_symbol);
+        console.log(current_score);
+        if (current_score > best_score) {
+            best_score = current_score;
+            best_move = move;
+        }
+    }
+    return best_move;
+}
+var Field_square = /** @class */ (function (_super) {
+    __extends(Field_square, _super);
+    function Field_square(props) {
+        return _super.call(this, props) || this;
+    }
+    Field_square.prototype.render = function () {
+        var source = "";
+        var props_val = this.props.value;
+        var props_disabled = this.props.is_disabled;
+        if (props_disabled === true) {
+            return (React.createElement("div", { className: "square_container disabled" }, props_val));
+        }
+        else {
+            return (React.createElement("div", { className: "square_container", onClick: this.props.onClick }, props_val));
+        }
+    };
+    return Field_square;
+}(React.Component));
+var Field = /** @class */ (function (_super) {
+    __extends(Field, _super);
+    function Field(props) {
+        var _this = _super.call(this, props) || this;
+        _this.handle_click = function (i, j) {
+            var new_board = _this.state.board;
+            new_board[i][j] = _this.turn;
+            _this.setState({
+                board: new_board
+            });
+            if (_this.turn === "X") {
+                _this.turn = "O";
+            }
+            else {
+                _this.turn = "X";
+            }
+            _this.game_state = check_game_state(new_board);
+            if (_this.game_state === "" && _this.ai_symbol === _this.turn) {
+                var move = select_best_move(_this.state.board, _this.ai_symbol, _this.player_symbol);
+                _this.handle_click(move[0], move[1]);
+            }
+        };
+        _this.state = {
+            board: generate_n_size_array(_this.props.size, "")
+        };
+        _this.turn = "X";
+        _this.player_symbol = "X";
+        _this.ai_symbol = "O";
+        _this.game_state = "";
+        return _this;
     }
     Field.prototype.render = function () {
         var _this = this;
@@ -7,10 +268,26 @@
             var i = index;
             return (React.createElement("div", { key: i, className: "field_row" }, array.map(function (val, index) {
                 var j = index;
-                return React.createElement(Field_square, { key: j, value: val, onClick: function (e) { _this.handle_click(id, e); } });
+                var is_disabled;
+                if (val != "" || _this.game_state != "") {
+                    is_disabled = true;
+                }
+                else {
+                    is_disabled = false;
+                }
+                return (React.createElement(Field_square, { key: j, value: val, is_disabled: is_disabled, onClick: function () { return _this.handle_click(i, j); } }));
             })));
         });
-        return (React.createElement("div", { className: "field_container" }, list_squares));
+        var message = "Next turn: " + this.turn;
+        if (this.game_state != "") {
+            message = this.game_state + " won!";
+        }
+        if (this.game_state === "D") {
+            message = "Draw!";
+        }
+        return (React.createElement("div", { className: "field_container" },
+            React.createElement("h2", null, message),
+            list_squares));
     };
     return Field;
 }(React.Component));
@@ -21,7 +298,7 @@ var App = /** @class */ (function (_super) {
     }
     App.prototype.render = function () {
         return (React.createElement("div", { className: "game_container" },
-            React.createElement(Field, null)));
+            React.createElement(Field, { size: 3 })));
     };
     return App;
 }(React.Component));

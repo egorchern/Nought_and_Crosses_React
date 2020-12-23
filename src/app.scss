@@ -28,11 +28,16 @@ body {
     color: black;
 }
 .game_container{
-    
+    width:100%;
     
 }
 .field_container{
     width:100%;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
     .field_row{
         display:flex;
         flex-direction: row;
@@ -46,6 +51,7 @@ body {
         justify-content: center;
         align-items: center;
         font-size: 52px;
+        user-select: none;
         cursor: pointer;
     }
     .square_container.disabled{
