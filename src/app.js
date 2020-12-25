@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 exports.__esModule = true;
 var React = require("react");
 var react_dom_1 = require("react-dom");
-var main = document.querySelector("#root");
+var root = document.querySelector("#root");
 function copy_array(arr) {
     var new_arr = [];
     for (var i = 0; i < arr.length; i += 1) {
@@ -281,6 +281,21 @@ var Field = /** @class */ (function (_super) {
                 _this.handle_click(move[0], move[1]);
             }
         };
+        _this.handle_key_down = function (event) {
+            if (event.key === "r") {
+                _this.turn = "X";
+                _this.player_symbol = _this.props.player_symbol;
+                _this.ai_symbol = _this.props.ai_symbol;
+                _this.game_state = "";
+                _this.setState({
+                    board: generate_n_size_array(_this.props.size, "")
+                });
+                if (_this.ai_symbol === "X") {
+                    var move = select_best_move(_this.state.board, _this.ai_symbol, _this.player_symbol);
+                    _this.handle_click(move[0], move[1]);
+                }
+            }
+        };
         _this.state = {
             board: generate_n_size_array(_this.props.size, "")
         };
@@ -291,6 +306,7 @@ var Field = /** @class */ (function (_super) {
         return _this;
     }
     Field.prototype.componentDidMount = function () {
+        window.onkeydown = this.handle_key_down;
         if (this.ai_symbol === "X") {
             var move = select_best_move(this.state.board, this.ai_symbol, this.player_symbol);
             this.handle_click(move[0], move[1]);
@@ -322,27 +338,29 @@ var Field = /** @class */ (function (_super) {
         }
         return (React.createElement("div", { className: "field_container" },
             React.createElement("h2", null, message),
+            this.game_state != "" &&
+                React.createElement("h2", null, "Press R to restart"),
             list_squares));
     };
     return Field;
 }(React.Component));
-var Symbol_choose_menu = /** @class */ (function (_super) {
-    __extends(Symbol_choose_menu, _super);
-    function Symbol_choose_menu(props) {
+var Menu = /** @class */ (function (_super) {
+    __extends(Menu, _super);
+    function Menu(props) {
         return _super.call(this, props) || this;
     }
-    Symbol_choose_menu.prototype.render = function () {
+    Menu.prototype.render = function () {
         var _this = this;
         return (React.createElement("div", null,
             React.createElement("div", null,
                 React.createElement("span", { id: "choose_menu_heading" }, "Choose what symbol you play as")),
-            React.createElement("div", { className: "choose_menu" },
+            React.createElement("div", { className: "menu" },
                 React.createElement("div", { onClick: function () { return _this.props.onClick("X"); }, className: "choose_menu_button" },
                     React.createElement("span", null, "X")),
                 React.createElement("div", { onClick: function () { return _this.props.onClick("O"); }, className: "choose_menu_button" },
                     React.createElement("span", null, "O")))));
     };
-    return Symbol_choose_menu;
+    return Menu;
 }(React.Component));
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
@@ -372,11 +390,11 @@ var App = /** @class */ (function (_super) {
         var menu_enabled = this.state.menu_enabled;
         return (React.createElement("div", { className: "app_container" },
             menu_enabled === true &&
-                React.createElement(Symbol_choose_menu, { onClick: this.handle_symbol_choose_click }),
+                React.createElement(Menu, { onClick: this.handle_symbol_choose_click }),
             menu_enabled === false &&
                 React.createElement("div", { className: "game_container" },
                     React.createElement(Field, { size: this.field_size, player_symbol: this.player_symbol, ai_symbol: this.ai_symbol }))));
     };
     return App;
 }(React.Component));
-react_dom_1.render(React.createElement(App, null), main);
+react_dom_1.render(React.createElement(App, null), root);

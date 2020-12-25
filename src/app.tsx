@@ -1,7 +1,7 @@
 import * as React from "react";
 import { render } from "react-dom";
 
-let main = document.querySelector("#root");
+let root = document.querySelector("#root");
 
 function copy_array(arr){
     let new_arr = [];
@@ -274,6 +274,8 @@ class Field_square extends React.Component {
         let source = "";
         let props_val = this.props.value;
         let props_disabled = this.props.is_disabled;
+        
+        
         if(props_disabled === true){
             return(
                 <div className="square_container disabled">
@@ -289,6 +291,7 @@ class Field_square extends React.Component {
                 </div>
             )
         }
+        
     }
 }
 
@@ -312,6 +315,7 @@ class Field extends React.Component {
     }
     
     componentDidMount(){
+        window.onkeydown = this.handle_key_down;
         if(this.ai_symbol === "X"){
             let move = select_best_move(this.state.board, this.ai_symbol, this.player_symbol);
             this.handle_click(move[0], move[1]);
@@ -339,6 +343,22 @@ class Field extends React.Component {
         }
         
     };
+    handle_key_down = (event) => {
+        
+        if(event.key === "r"){
+            this.turn = "X";
+            this.player_symbol = this.props.player_symbol;
+            this.ai_symbol = this.props.ai_symbol;
+            this.game_state = "";
+            this.setState({
+                board: generate_n_size_array(this.props.size, "")
+            })
+            if(this.ai_symbol === "X"){
+                let move = select_best_move(this.state.board, this.ai_symbol, this.player_symbol);
+                this.handle_click(move[0], move[1]);
+            }
+        }
+    }
     render() {
         let arr = this.state.board;
         let list_squares = arr.map((array, index) => {
@@ -374,8 +394,12 @@ class Field extends React.Component {
             message = "Draw!";
         }
         return (
-            <div className="field_container">
+            <div className="field_container" >
                 <h2>{message}</h2>
+                {
+                    this.game_state != "" &&
+                    <h2>Press R to restart</h2>
+                }
                 {list_squares}
             </div>
         )
@@ -383,7 +407,7 @@ class Field extends React.Component {
     }
 }
 
-class Symbol_choose_menu extends React.Component{
+class Menu extends React.Component{
     constructor(props){
         super(props);
     }
@@ -393,7 +417,7 @@ class Symbol_choose_menu extends React.Component{
                 <div>
                     <span id="choose_menu_heading">Choose what symbol you play as</span>
                 </div>
-                <div className="choose_menu">
+                <div className="menu">
                     <div onClick={() => this.props.onClick("X")} className="choose_menu_button">
                         <span>X</span>
                     </div>
@@ -439,7 +463,7 @@ class App extends React.Component {
             <div className="app_container">
                 {
                     menu_enabled === true && 
-                    <Symbol_choose_menu onClick={this.handle_symbol_choose_click}/>
+                    <Menu onClick={this.handle_symbol_choose_click}/>
                 }
                 {
                     menu_enabled === false && 
@@ -453,4 +477,4 @@ class App extends React.Component {
     }
 }
 
-render(<App />, main);
+render(<App />, root);

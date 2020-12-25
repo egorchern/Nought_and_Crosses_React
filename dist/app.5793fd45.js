@@ -29845,7 +29845,7 @@ var React = __importStar(require("react"));
 
 var react_dom_1 = require("react-dom");
 
-var main = document.querySelector("#root");
+var root = document.querySelector("#root");
 
 function copy_array(arr) {
   var new_arr = [];
@@ -30172,6 +30172,25 @@ function (_super) {
       }
     };
 
+    _this.handle_key_down = function (event) {
+      if (event.key === "r") {
+        _this.turn = "X";
+        _this.player_symbol = _this.props.player_symbol;
+        _this.ai_symbol = _this.props.ai_symbol;
+        _this.game_state = "";
+
+        _this.setState({
+          board: generate_n_size_array(_this.props.size, "")
+        });
+
+        if (_this.ai_symbol === "X") {
+          var move = select_best_move(_this.state.board, _this.ai_symbol, _this.player_symbol);
+
+          _this.handle_click(move[0], move[1]);
+        }
+      }
+    };
+
     _this.state = {
       board: generate_n_size_array(_this.props.size, "")
     };
@@ -30183,6 +30202,8 @@ function (_super) {
   }
 
   Field.prototype.componentDidMount = function () {
+    window.onkeydown = this.handle_key_down;
+
     if (this.ai_symbol === "X") {
       var move = select_best_move(this.state.board, this.ai_symbol, this.player_symbol);
       this.handle_click(move[0], move[1]);
@@ -30230,28 +30251,28 @@ function (_super) {
 
     return /*#__PURE__*/React.createElement("div", {
       className: "field_container"
-    }, /*#__PURE__*/React.createElement("h2", null, message), list_squares);
+    }, /*#__PURE__*/React.createElement("h2", null, message), this.game_state != "" && /*#__PURE__*/React.createElement("h2", null, "Press R to restart"), list_squares);
   };
 
   return Field;
 }(React.Component);
 
-var Symbol_choose_menu =
+var Menu =
 /** @class */
 function (_super) {
-  __extends(Symbol_choose_menu, _super);
+  __extends(Menu, _super);
 
-  function Symbol_choose_menu(props) {
+  function Menu(props) {
     return _super.call(this, props) || this;
   }
 
-  Symbol_choose_menu.prototype.render = function () {
+  Menu.prototype.render = function () {
     var _this = this;
 
     return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       id: "choose_menu_heading"
     }, "Choose what symbol you play as")), /*#__PURE__*/React.createElement("div", {
-      className: "choose_menu"
+      className: "menu"
     }, /*#__PURE__*/React.createElement("div", {
       onClick: function onClick() {
         return _this.props.onClick("X");
@@ -30265,7 +30286,7 @@ function (_super) {
     }, /*#__PURE__*/React.createElement("span", null, "O"))));
   };
 
-  return Symbol_choose_menu;
+  return Menu;
 }(React.Component);
 
 var App =
@@ -30303,7 +30324,7 @@ function (_super) {
     var menu_enabled = this.state.menu_enabled;
     return /*#__PURE__*/React.createElement("div", {
       className: "app_container"
-    }, menu_enabled === true && /*#__PURE__*/React.createElement(Symbol_choose_menu, {
+    }, menu_enabled === true && /*#__PURE__*/React.createElement(Menu, {
       onClick: this.handle_symbol_choose_click
     }), menu_enabled === false && /*#__PURE__*/React.createElement("div", {
       className: "game_container"
@@ -30317,7 +30338,7 @@ function (_super) {
   return App;
 }(React.Component);
 
-react_dom_1.render( /*#__PURE__*/React.createElement(App, null), main);
+react_dom_1.render( /*#__PURE__*/React.createElement(App, null), root);
 },{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -30346,7 +30367,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49906" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54618" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
