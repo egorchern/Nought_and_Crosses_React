@@ -149,67 +149,96 @@ function make_move_on_board(board, move, symbol) {
     local_board[move[0]][move[1]] = symbol;
     return local_board;
 }
-function minmax(board, minimize, advantage_symbol, disadvantage_symbol) {
+function minmax(board, minimize, advantage_symbol, disadvantage_symbol, depth) {
     var outcome = check_game_state(board);
     switch (outcome) {
         case "X":
             if (advantage_symbol === "X") {
-                return 1;
+                return [1, depth];
             }
             else {
-                return -1;
+                return [-1, depth];
             }
         case "O":
             if (advantage_symbol === "O") {
-                return 1;
+                return [1, depth];
             }
             else {
-                return -1;
+                return [-1, depth];
             }
         case "D":
-            return 0;
+            return [0, depth];
     }
     if (minimize === true) {
         var worst_score = Infinity;
+        var best_depth = Infinity;
         var possible_moves = get_possible_moves(board);
         for (var i = 0; i < possible_moves.length; i += 1) {
             var move = possible_moves[i];
             var current_board = make_move_on_board(board, move, disadvantage_symbol);
-            var current_score = minmax(current_board, false, advantage_symbol, disadvantage_symbol);
+            var temp = minmax(current_board, false, advantage_symbol, disadvantage_symbol, depth + 1);
+            var current_score = temp[0];
+            var current_depth = temp[1];
             if (current_score < worst_score) {
                 worst_score = current_score;
+                best_depth = current_depth;
+            }
+            else if (current_score === worst_score) {
+                if (current_depth < best_depth) {
+                    best_depth = current_depth;
+                }
             }
         }
-        return worst_score;
+        return [worst_score, best_depth];
     }
     else {
         var best_score = -Infinity;
+        var best_depth = Infinity;
         var possible_moves = get_possible_moves(board);
         for (var i = 0; i < possible_moves.length; i += 1) {
             var move = possible_moves[i];
             var current_board = make_move_on_board(board, move, advantage_symbol);
-            var current_score = minmax(current_board, true, advantage_symbol, disadvantage_symbol);
+            var temp = minmax(current_board, true, advantage_symbol, disadvantage_symbol, depth + 1);
+            var current_score = temp[0];
+            var current_depth = temp[1];
             if (current_score > best_score) {
                 best_score = current_score;
+                best_depth = current_depth;
+            }
+            else if (current_score === best_score) {
+                if (current_depth < best_depth) {
+                    best_depth = current_depth;
+                }
             }
         }
-        return best_score;
+        return [best_score, best_depth];
     }
 }
 function select_best_move(board, advantage_symbol, disadvantage_symbol) {
     var best_score = -Infinity;
+    var best_depth = Infinity;
     var best_move;
     var possible_moves = get_possible_moves(board);
     for (var i = 0; i < possible_moves.length; i += 1) {
         var move = possible_moves[i];
         var current_local_board = make_move_on_board(board, move, advantage_symbol);
-        var current_score = minmax(current_local_board, true, advantage_symbol, disadvantage_symbol);
-        console.log(current_score);
+        var temp = minmax(current_local_board, true, advantage_symbol, disadvantage_symbol, 0);
+        var current_score = temp[0];
+        var current_depth = temp[1];
+        console.log(current_score, current_depth);
         if (current_score > best_score) {
             best_score = current_score;
             best_move = move;
+            best_depth = current_depth;
+        }
+        else if (current_score === best_score) {
+            if (current_depth < best_depth) {
+                best_depth = current_depth;
+                best_move = move;
+            }
         }
     }
+    console.log("\n");
     return best_move;
 }
 var Field_square = /** @class */ (function (_super) {
@@ -256,11 +285,17 @@ var Field = /** @class */ (function (_super) {
             board: generate_n_size_array(_this.props.size, "")
         };
         _this.turn = "X";
-        _this.player_symbol = "X";
-        _this.ai_symbol = "O";
+        _this.player_symbol = _this.props.player_symbol;
+        _this.ai_symbol = _this.props.ai_symbol;
         _this.game_state = "";
         return _this;
     }
+    Field.prototype.componentDidMount = function () {
+        if (this.ai_symbol === "X") {
+            var move = select_best_move(this.state.board, this.ai_symbol, this.player_symbol);
+            this.handle_click(move[0], move[1]);
+        }
+    };
     Field.prototype.render = function () {
         var _this = this;
         var arr = this.state.board;
@@ -291,14 +326,56 @@ var Field = /** @class */ (function (_super) {
     };
     return Field;
 }(React.Component));
+var Symbol_choose_menu = /** @class */ (function (_super) {
+    __extends(Symbol_choose_menu, _super);
+    function Symbol_choose_menu(props) {
+        return _super.call(this, props) || this;
+    }
+    Symbol_choose_menu.prototype.render = function () {
+        var _this = this;
+        return (React.createElement("div", null,
+            React.createElement("div", null,
+                React.createElement("span", { id: "choose_menu_heading" }, "Choose what symbol you play as")),
+            React.createElement("div", { className: "choose_menu" },
+                React.createElement("div", { onClick: function () { return _this.props.onClick("X"); }, className: "choose_menu_button" },
+                    React.createElement("span", null, "X")),
+                React.createElement("div", { onClick: function () { return _this.props.onClick("O"); }, className: "choose_menu_button" },
+                    React.createElement("span", null, "O")))));
+    };
+    return Symbol_choose_menu;
+}(React.Component));
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this.handle_symbol_choose_click = function (symbol) {
+            _this.player_symbol = symbol;
+            if (symbol === "X") {
+                _this.ai_symbol = "O";
+            }
+            else {
+                _this.ai_symbol = "X";
+            }
+            _this.setState({
+                menu_enabled: false
+            });
+        };
+        _this.state = {
+            menu_enabled: true
+        };
+        _this.player_symbol;
+        _this.ai_symbol;
+        _this.field_size = 3;
+        return _this;
     }
     App.prototype.render = function () {
-        return (React.createElement("div", { className: "game_container" },
-            React.createElement(Field, { size: 3 })));
+        var menu_enabled = this.state.menu_enabled;
+        return (React.createElement("div", { className: "app_container" },
+            menu_enabled === true &&
+                React.createElement(Symbol_choose_menu, { onClick: this.handle_symbol_choose_click }),
+            menu_enabled === false &&
+                React.createElement("div", { className: "game_container" },
+                    React.createElement(Field, { size: this.field_size, player_symbol: this.player_symbol, ai_symbol: this.ai_symbol }))));
     };
     return App;
 }(React.Component));
